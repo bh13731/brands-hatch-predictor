@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Brands Hatch GP — Academy Top-10 Predictor</title>
+<style>
+  :root{
+    --bg:#0d1117; --card:#161b22; --card2:#1c2330; --line:#2d3646;
+    --txt:#e6edf3; --dim:#8b949e; --green:#3fb950; --amber:#d29922;
+    --red:#f85149; --accent:#58a6ff; --gold:#ffd700;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .wrap{max-width:720px;margin:0 auto;padding:16px 14px 60px}
+  header{text-align:center;padding:18px 0 6px}
+  header h1{margin:0;font-size:1.35rem;letter-spacing:.5px}
+  header .sub{color:var(--dim);font-size:.85rem;margin-top:6px}
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:600;margin-top:10px}
+  .badge.open{background:#12331c;color:var(--green);border:1px solid #1f5c30}
+  .badge.locked{background:#33210f;color:var(--amber);border:1px solid #5c451f}
+  .badge.done{background:#1a2740;color:var(--accent);border:1px solid #2a4a7a}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-top:16px}
+  .card h2{margin:0 0 10px;font-size:1rem;color:var(--accent)}
+  .hint{color:var(--dim);font-size:.8rem;margin:4px 0 12px}
+  .cols{display:flex;gap:12px;flex-wrap:wrap}
+  .col{flex:1 1 280px;min-width:260px}
+  .col h3{font-size:.8rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin:0 0 8px}
+  ul{list-style:none;margin:0;padding:0}
+  .drv{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;margin-bottom:6px;cursor:pointer;user-select:none;font-size:.9rem}
+  .drv:hover{border-color:var(--accent)}
+  .drv .num{color:var(--dim);font-size:.75rem;min-width:30px}
+  .drv .pts{margin-left:auto;color:var(--dim);font-size:.75rem}
+  .pick{display:flex;align-items:center;gap:8px;background:var(--card2);border:1px solid var(--line);
+    border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:.9rem}
+  .pick .pos{font-weight:700;color:var(--gold);min-width:24px;text-align:right}
+  .pick button{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1rem;padding:2px 6px}
+  .pick button:hover{color:var(--txt)}
+  .pick .name{flex:1}
+  .slot-empty{border:1px dashed var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;
+    color:var(--dim);font-size:.85rem;display:flex;gap:8px}
+  .slot-empty .pos{min-width:24px;text-align:right;font-weight:700}
+  input[type=text],input[type=password]{width:100%;padding:10px;border-radius:8px;border:1px solid var(--line);
+    background:var(--card2);color:var(--txt);font-size:.95rem;margin-bottom:8px}
+  .btn{width:100%;padding:12px;border:none;border-radius:8px;background:var(--green);color:#04140a;
+    font-weight:700;font-size:1rem;cursor:pointer;margin-top:4px}
+  .btn:disabled{background:#30363d;color:var(--dim);cursor:not-allowed}
+  .msg{margin-top:10px;font-size:.85rem;padding:8px 10px;border-radius:8px;display:none}
+  .msg.err{display:block;background:#3d1418;color:var(--red)}
+  .msg.ok{display:block;background:#12331c;color:var(--green)}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-size:.72rem;text-transform:uppercase;letter-spacing:1px}
+  tr.winner td{color:var(--gold);font-weight:700}
+  .entrant{border-bottom:1px solid var(--line);padding:8px 0;font-size:.88rem;display:flex;justify-content:space-between}
+  .entrant .when{color:var(--dim);font-size:.75rem}
+  details{margin-top:6px}
+  summary{cursor:pointer;color:var(--accent);font-size:.82rem}
+  .countdown{font-variant-numeric:tabular-nums;font-weight:600;color:var(--amber)}
+  .offline{background:#3d1418;color:var(--red);padding:10px;border-radius:8px;margin-top:14px;
+    font-size:.85rem;display:none;text-align:center}
+  footer{text-align:center;color:var(--dim);font-size:.72rem;margin-top:30px}
+  footer a{color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🏁 Brands Hatch GP — Top-10 Predictor</h1>
+    <div class="sub" id="eventLine">Caterham Academy · 10–11 October 2026</div>
+    <div id="statusBadge"></div>
+  </header>
+
+  <div class="offline" id="offlineBox">⚠️ Can't reach the prediction server right now. Try again in a minute.</div>
+
+  <div class="card" id="pickCard">
+    <h2>Your prediction</h2>
+    <div class="hint">Tap drivers to build your top 10 in finishing order. Tap ✕ to remove, ▲▼ to reorder. Scoring: sum of |predicted − actual| position across your 10 picks — lowest score wins. Exact hits break ties.</div>
+    <div class="cols">
+      <div class="col">
+        <h3>Your top 10 <span id="pickCount"></span></h3>
+        <ul id="picks"></ul>
+      </div>
+      <div class="col">
+        <h3>Drivers (championship order)</h3>
+        <ul id="pool"></ul>
+      </div>
+    </div>
+    <div style="margin-top:14px">
+      <input type="text" id="name" placeholder="Your name (as other racers know you)" maxlength="40">
+      <input type="password" id="pin" placeholder="PIN (3+ chars — lets you edit your picks later)" maxlength="20">
+      <button class="btn" id="submitBtn" disabled>Submit prediction</button>
+      <div class="msg" id="msg"></div>
+    </div>
+  </div>
+
+  <div class="card" id="lockCard" style="display:none">
+    <h2>Predictions locked 🔒</h2>
+    <div class="hint" id="lockHint"></div>
+    <div id="lockedList"></div>
+  </div>
+
+  <div class="card" id="resultsCard" style="display:none">
+    <h2>🏆 Final leaderboard</h2>
+    <div class="hint">Score = sum of positional errors across the 10 picks. Lower is better.</div>
+    <table id="lbTable"><thead><tr><th>#</th><th>Player</th><th>Score</th><th>Exact</th></tr></thead><tbody></tbody></table>
+    <details><summary>Show official result</summary><ol id="officialOrder" style="font-size:.85rem;margin-top:8px"></ol></details>
+  </div>
+
+  <div class="card" id="entrantsCard">
+    <h2>Who's in</h2>
+    <div class="hint">Picks stay hidden until predictions lock — no copying.</div>
+    <div id="entrants"><span class="hint">Nobody yet. Be first.</span></div>
+  </div>
+
+  <footer>Standings from <a href="https://caterhamcars.com/en/motorsport/leaderboards" target="_blank">caterhamcars.com</a> · built by Bolt ⚡</footer>
+</div>
+
+<script>
+const CONFIG_URL = 'api-config.json';
+let API = null, state = null, picks = [];
+
+async function getApi(){
+  const r = await fetch(CONFIG_URL + '?t=' + Date.now());
+  API = (await r.json()).api.replace(/\/$/,'');
+}
+
+async function loadState(){
+  try{
+    const r = await fetch(API + '/api/state');
+    state = await r.json();
+    document.getElementById('offlineBox').style.display='none';
+    render();
+  }catch(e){
+    document.getElementById('offlineBox').style.display='block';
+  }
+}
+
+function fmtCountdown(ms){
+  if(ms<=0) return 'now';
+  const d=Math.floor(ms/86400000), h=Math.floor(ms%86400000/3600000),
+        m=Math.floor(ms%3600000/60000);
+  return (d?d+'d ':'')+h+'h '+m+'m';
+}
+
+function render(){
+  const badge = document.getElementById('statusBadge');
+  const lockAt = new Date(state.lock_at);
+  if(state.results){
+    badge.innerHTML = '<span class="badge done">Race finished — results in</span>';
+  } else if(state.locked){
+    badge.innerHTML = '<span class="badge locked">🔒 Predictions locked — awaiting result</span>';
+  } else {
+    badge.innerHTML = '<span class="badge open">Open — locks in <span class="countdown">' +
+      fmtCountdown(lockAt - new Date()) + '</span></span>';
+  }
+  document.getElementById('eventLine').textContent = state.event;
+
+  document.getElementById('pickCard').style.display = state.locked ? 'none':'block';
+  document.getElementById('lockCard').style.display = (state.locked && !state.results)?'block':'none';
+  document.getElementById('resultsCard').style.display = state.results?'block':'none';
+
+  if(!state.locked) renderPicker();
+  renderEntrants();
+  if(state.locked && !state.results) renderLockedPicks();
+  if(state.results) renderLeaderboard();
+}
+
+function renderPicker(){
+  const pool = document.getElementById('pool');
+  const picksEl = document.getElementById('picks');
+  const chosen = new Set(picks);
+  pool.innerHTML='';
+  state.drivers.forEach(d=>{
+    if(chosen.has(d.name)) return;
+    const li=document.createElement('li');
+    li.className='drv';
+    li.innerHTML = `<span class="num">#${d.num}</span><span>${d.name}</span><span class="pts">${d.points} pts</span>`;
+    li.onclick=()=>{ if(picks.length<10){ picks.push(d.name); renderPicker(); } };
+    pool.appendChild(li);
+  });
+  picksEl.innerHTML='';
+  picks.forEach((n,i)=>{
+    const li=document.createElement('li');
+    li.className='pick';
+    li.innerHTML = `<span class="pos">${i+1}</span><span class="name">${n}</span>` +
+      `<button title="up">▲</button><button title="down">▼</button><button title="remove">✕</button>`;
+    const [up,down,rm]=li.querySelectorAll('button');
+    up.onclick=()=>{ if(i>0){[picks[i-1],picks[i]]=[picks[i],picks[i-1]];renderPicker();} };
+    down.onclick=()=>{ if(i<picks.length-1){[picks[i+1],picks[i]]=[picks[i],picks[i+1]];renderPicker();} };
+    rm.onclick=()=>{ picks.splice(i,1); renderPicker(); };
+    picksEl.appendChild(li);
+  });
+  for(let i=picks.length;i<10;i++){
+    const li=document.createElement('li');
+    li.className='slot-empty';
+    li.innerHTML=`<span class="pos">${i+1}</span><span>— tap a driver →</span>`;
+    picksEl.appendChild(li);
+  }
+  document.getElementById('pickCount').textContent = `(${picks.length}/10)`;
+  document.getElementById('submitBtn').disabled = picks.length!==10;
+}
+
+function renderEntrants(){
+  const el=document.getElementById('entrants');
+  const names=Object.keys(state.predictions);
+  if(!names.length){ el.innerHTML='<span class="hint">Nobody yet. Be first.</span>'; return; }
+  el.innerHTML='';
+  names.sort((a,b)=>a.localeCompare(b)).forEach(n=>{
+    const d=document.createElement('div');
+    d.className='entrant';
+    d.innerHTML=`<span>🏎️ ${n}</span><span class="when">updated ${state.predictions[n].updated_at.slice(0,16).replace('T',' ')}Z</span>`;
+    el.appendChild(d);
+  });
+}
+
+function renderLockedPicks(){
+  document.getElementById('lockHint').textContent =
+    'All picks are now visible. Result gets entered after the race.';
+  const el=document.getElementById('lockedList'); el.innerHTML='';
+  Object.entries(state.predictions).forEach(([n,p])=>{
+    const det=document.createElement('details');
+    det.innerHTML=`<summary>🏎️ ${n}</summary><ol style="font-size:.85rem">`+
+      p.top10.map(x=>`<li>${x}</li>`).join('')+`</ol>`;
+    el.appendChild(det);
+  });
+}
+
+function renderLeaderboard(){
+  const tb=document.querySelector('#lbTable tbody'); tb.innerHTML='';
+  (state.leaderboard||[]).forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    if(i===0) tr.className='winner';
+    tr.innerHTML=`<td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.exact}</td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('officialOrder').innerHTML =
+    state.results.map(n=>`<li>${n}</li>`).join('');
+}
+
+document.getElementById('submitBtn').onclick = async ()=>{
+  const name=document.getElementById('name').value.trim();
+  const pin=document.getElementById('pin').value;
+  const msg=document.getElementById('msg');
+  msg.className='msg';
+  try{
+    const r=await fetch(API+'/api/predict',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({name,pin,top10:picks})});
+    const j=await r.json();
+    if(j.ok){ msg.className='msg ok'; msg.textContent='✅ Prediction saved! Come back with the same name + PIN to change it before lock.'; loadState(); }
+    else { msg.className='msg err'; msg.textContent=j.error||'Something went wrong.'; }
+  }catch(e){ msg.className='msg err'; msg.textContent='Network error — server unreachable.'; }
+};
+
+(async ()=>{
+  await getApi();
+  await loadState();
+  setInterval(loadState, 30000);
+})();
+</script>
+</body>
+</html>
