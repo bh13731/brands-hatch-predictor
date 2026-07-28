@@ -10,8 +10,8 @@ ADMIN_KEY = os.environ.get("PREDICTOR_ADMIN_KEY", "changeme")
 LOCK = threading.Lock()
 
 DEFAULT_STORE = {
-    "event": "Caterham Academy — Brands Hatch GP, 10–11 Oct 2026",
-    "lock_at": "2026-10-10T08:00:00Z",  # predictions lock (UTC)
+    "event": "Caterham Academy — Brands Hatch Indy, Sat 1 Aug 2026",
+    "lock_at": "2026-08-01T07:00:00Z",  # predictions lock (UTC)
     "predictions": {},                    # name -> {top10:[names], pin, submitted_at, updated_at}
     "results": None                        # final finishing order (list of driver names) once entered
 }
