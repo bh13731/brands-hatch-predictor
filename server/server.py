@@ -11,7 +11,7 @@ LOCK = threading.Lock()
 
 DEFAULT_STORE = {
     "event": "Caterham Academy — Brands Hatch Indy, Sat 1 Aug 2026",
-    "lock_at": "2026-08-01T07:00:00Z",  # predictions lock (UTC)
+    "lock_at": "2026-08-01T06:00:00Z",  # predictions lock (UTC)
     "predictions": {},                    # name -> {top10:[names], pin, submitted_at, updated_at}
     "results": None                        # final finishing order (list of driver names) once entered
 }
