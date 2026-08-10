@@ -37,3 +37,28 @@ if ! "$TS" serve status 2>/dev/null | grep -q ':10000 (tailnet only)'; then
   "$TS" serve --bg --https=10000 http://127.0.0.1:3456 >/dev/null 2>&1
   log "re-enabled tailnet serve :10000 (autodev UI)"
 fi
+
+# 4. Publish state snapshot to GitHub Pages (same-origin fallback when the
+#    funnel is unreachable from a visitor's network). Only commit real changes:
+#    strip the volatile server_time field before comparing.
+SNAP="$BASE/docs/state-snapshot.json"
+if curl -s --max-time 5 http://127.0.0.1:8790/api/state \
+     | python3 -c 'import json,sys; s=json.load(sys.stdin); s.pop("server_time",None); print(json.dumps(s,indent=1))' \
+     > "$SNAP.tmp" 2>/dev/null && [ -s "$SNAP.tmp" ]; then
+  if ! cmp -s "$SNAP.tmp" "$SNAP" 2>/dev/null; then
+    mv "$SNAP.tmp" "$SNAP"
+    if git -C "$BASE" diff --quiet -- docs/state-snapshot.json 2>/dev/null && ! git -C "$BASE" ls-files --error-unmatch docs/state-snapshot.json >/dev/null 2>&1; then
+      : # new file, fall through to add
+    fi
+    git -C "$BASE" add docs/state-snapshot.json >/dev/null 2>&1
+    if ! git -C "$BASE" diff --cached --quiet 2>/dev/null; then
+      git -C "$BASE" commit -q -m "snapshot: state $(date -u +%FT%TZ)" >/dev/null 2>&1
+      git -C "$BASE" push -q origin HEAD >/dev/null 2>&1 && log "pushed state snapshot" || log "snapshot push FAILED (kept local commit)"
+    fi
+  else
+    rm -f "$SNAP.tmp"
+  fi
+else
+  rm -f "$SNAP.tmp" 2>/dev/null
+  log "snapshot fetch failed (API down?)"
+fi

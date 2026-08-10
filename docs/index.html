@@ -157,15 +157,38 @@ async function getApi(){
   API = (await r.json()).api.replace(/\/$/,'');
 }
 
+async function fetchState(){
+  const r = await fetch(API + '/api/state', {cache:'no-store'});
+  if(!r.ok) throw new Error('bad status ' + r.status);
+  return await r.json();
+}
+
+let liveOk = false;
 async function loadState(){
-  try{
-    const r = await fetch(API + '/api/state');
-    state = await r.json();
-    document.getElementById('offlineBox').style.display='none';
-    render();
-  }catch(e){
-    document.getElementById('offlineBox').style.display='block';
+  // Retry the live API a few times before declaring trouble.
+  for(let i=0;i<3;i++){
+    try{
+      state = await fetchState();
+      liveOk = true;
+      document.getElementById('offlineBox').style.display='none';
+      render();
+      return;
+    }catch(e){ await new Promise(r=>setTimeout(r, 1200*(i+1))); }
   }
+  liveOk = false;
+  // Fallback: same-origin snapshot (refreshed every ~10 min) so the page still renders.
+  try{
+    const r = await fetch('state-snapshot.json?t=' + Date.now(), {cache:'no-store'});
+    if(r.ok){
+      state = await r.json();
+      render();
+      const box = document.getElementById('offlineBox');
+      box.textContent = '⚠️ Live server unreachable from your network — showing a recent snapshot. Submitting picks may not work right now; try again in a few minutes (switching between Wi‑Fi and mobile data sometimes helps).';
+      box.style.display='block';
+      return;
+    }
+  }catch(e){}
+  document.getElementById('offlineBox').style.display='block';
 }
 
 function fmtCountdown(ms){
@@ -344,7 +367,7 @@ document.getElementById('submitBtn').onclick = async ()=>{
 (async ()=>{
   await getApi();
   await loadState();
-  setInterval(loadState, 30000);
+  setInterval(loadState, 15000);
 })();
 </script>
 </body>
