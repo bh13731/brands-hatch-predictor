@@ -1,36 +1,180 @@
 {
-  "updated": "2026-08-10",
-  "source": "https://caterhamcars.com/en/motorsport/leaderboards",
-  "note": "Site standings re-scraped 2026-08-10 but still exclude the Brands Hatch round (1 Aug); points shown are pre-Brands Hatch. Points are a display hint only.",
-  "drivers": [
-    {"pos": 1, "name": "William Mulholland", "num": 67, "points": 52},
-    {"pos": 2, "name": "Barney Hussey-Yeo", "num": 2, "points": 45},
-    {"pos": 3, "name": "Tim George", "num": 23, "points": 41},
-    {"pos": 4, "name": "Benjamin Prince-Stone", "num": 75, "points": 41},
-    {"pos": 5, "name": "Phil McGovern", "num": 7, "points": 40},
-    {"pos": 6, "name": "Tom Stanton", "num": 22, "points": 38},
-    {"pos": 7, "name": "Dan West", "num": 34, "points": 38},
-    {"pos": 8, "name": "James Greenhalgh", "num": 15, "points": 35},
-    {"pos": 9, "name": "Freddie Caldwell", "num": 8, "points": 32},
-    {"pos": 10, "name": "Olan Murphy", "num": 19, "points": 30},
-    {"pos": 11, "name": "Antony Dann", "num": 73, "points": 29},
-    {"pos": 12, "name": "Owen McIntyre", "num": 13, "points": 27},
-    {"pos": 13, "name": "Jonathan Macklin", "num": 24, "points": 24},
-    {"pos": 14, "name": "Donatas Juskauskas", "num": 77, "points": 22},
-    {"pos": 15, "name": "Adam Mann", "num": 11, "points": 19},
-    {"pos": 15, "name": "John Wells", "num": 65, "points": 19},
-    {"pos": 17, "name": "James Whiting", "num": 12, "points": 15},
-    {"pos": 17, "name": "Michael Bedford", "num": 20, "points": 15},
-    {"pos": 19, "name": "Stuart Gardner", "num": 4, "points": 12},
-    {"pos": 20, "name": "Nicholas Tuckett", "num": 49, "points": 9},
-    {"pos": 20, "name": "Sean McCammon", "num": 66, "points": 9},
-    {"pos": 22, "name": "Steve Hollyhead", "num": 60, "points": 3},
-    {"pos": 23, "name": "Zach Parkhouse", "num": 3, "points": 0},
-    {"pos": 23, "name": "Morton Stratten", "num": 5, "points": 0},
-    {"pos": 23, "name": "Alistair Murray", "num": 17, "points": 0},
-    {"pos": 23, "name": "Robert Hardy", "num": 29, "points": 0},
-    {"pos": 23, "name": "Craig Latimer", "num": 33, "points": 0},
-    {"pos": 23, "name": "Freddy Kelly", "num": 42, "points": 0},
-    {"pos": 23, "name": "Peter Holland", "num": 64, "points": 0}
-  ]
+ "updated": "2026-08-10",
+ "source": "caterhamcars.com leaderboard (pre-Brands) + TSL Brands Hatch 1 Aug result, points computed per 2025 Academy regs 1.6.1 (25,23,22,21,... +1 FL); excludes drops/marshalling/briefing bonuses",
+ "drivers": [
+  {
+   "pos": 1,
+   "name": "William Mulholland",
+   "num": 67,
+   "points": 78
+  },
+  {
+   "pos": 2,
+   "name": "Benjamin Prince-Stone",
+   "num": 75,
+   "points": 63
+  },
+  {
+   "pos": 2,
+   "name": "Barney Hussey-Yeo",
+   "num": 2,
+   "points": 63
+  },
+  {
+   "pos": 4,
+   "name": "Tim George",
+   "num": 23,
+   "points": 60
+  },
+  {
+   "pos": 5,
+   "name": "Dan West",
+   "num": 34,
+   "points": 59
+  },
+  {
+   "pos": 6,
+   "name": "James Greenhalgh",
+   "num": 15,
+   "points": 55
+  },
+  {
+   "pos": 6,
+   "name": "Tom Stanton",
+   "num": 22,
+   "points": 55
+  },
+  {
+   "pos": 8,
+   "name": "Phil McGovern",
+   "num": 7,
+   "points": 50
+  },
+  {
+   "pos": 9,
+   "name": "Freddie Caldwell",
+   "num": 8,
+   "points": 45
+  },
+  {
+   "pos": 10,
+   "name": "Antony Dann",
+   "num": 73,
+   "points": 43
+  },
+  {
+   "pos": 11,
+   "name": "Olan Murphy",
+   "num": 19,
+   "points": 41
+  },
+  {
+   "pos": 12,
+   "name": "Owen McIntyre",
+   "num": 13,
+   "points": 34
+  },
+  {
+   "pos": 13,
+   "name": "Donatas Juskauskas",
+   "num": 77,
+   "points": 30
+  },
+  {
+   "pos": 14,
+   "name": "Jonathan Macklin",
+   "num": 24,
+   "points": 28
+  },
+  {
+   "pos": 15,
+   "name": "Morton Stratten",
+   "num": 5,
+   "points": 23
+  },
+  {
+   "pos": 16,
+   "name": "Adam Mann",
+   "num": 11,
+   "points": 22
+  },
+  {
+   "pos": 17,
+   "name": "Michael Bedford",
+   "num": 20,
+   "points": 21
+  },
+  {
+   "pos": 17,
+   "name": "John Wells",
+   "num": 65,
+   "points": 21
+  },
+  {
+   "pos": 19,
+   "name": "Zach Parkhouse",
+   "num": 3,
+   "points": 16
+  },
+  {
+   "pos": 20,
+   "name": "Freddy Kelly",
+   "num": 42,
+   "points": 15
+  },
+  {
+   "pos": 20,
+   "name": "James Whiting",
+   "num": 12,
+   "points": 15
+  },
+  {
+   "pos": 22,
+   "name": "Stuart Gardner",
+   "num": 4,
+   "points": 13
+  },
+  {
+   "pos": 23,
+   "name": "Peter Holland",
+   "num": 64,
+   "points": 12
+  },
+  {
+   "pos": 24,
+   "name": "Nicholas Tuckett",
+   "num": 49,
+   "points": 10
+  },
+  {
+   "pos": 25,
+   "name": "Alistair Murray",
+   "num": 17,
+   "points": 9
+  },
+  {
+   "pos": 25,
+   "name": "Sean McCammon",
+   "num": 66,
+   "points": 9
+  },
+  {
+   "pos": 27,
+   "name": "Craig Latimer",
+   "num": 33,
+   "points": 5
+  },
+  {
+   "pos": 28,
+   "name": "Steve Hollyhead",
+   "num": 60,
+   "points": 4
+  },
+  {
+   "pos": 29,
+   "name": "Robert Hardy",
+   "num": 29,
+   "points": 1
+  }
+ ]
 }
