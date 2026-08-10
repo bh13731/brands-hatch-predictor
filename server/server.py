@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Brands Hatch prediction game API. Stdlib only, JSON file store."""
+"""Caterham Academy prediction game API (Knockhill: quali + race1 + race2).
+Stdlib only, JSON file store."""
 import json, os, re, threading, time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
@@ -9,11 +10,15 @@ DRIVERS = os.path.join(BASE, "..", "data", "drivers.json")
 ADMIN_KEY = os.environ.get("PREDICTOR_ADMIN_KEY", "changeme")
 LOCK = threading.Lock()
 
+SESSIONS = ("quali", "race1", "race2")
+
 DEFAULT_STORE = {
-    "event": "Caterham Academy — Brands Hatch Indy, Sat 1 Aug 2026",
-    "lock_at": "2026-08-01T06:00:00Z",  # predictions lock (UTC)
-    "predictions": {},                    # name -> {top10:[names], pin, submitted_at, updated_at}
-    "results": None                        # final finishing order (list of driver names) once entered
+    "event": "Caterham Academy — Knockhill, Sat 15–Sun 16 Aug 2026",
+    "lock_at": "2026-08-15T06:00:00Z",  # predictions lock (UTC) = 07:00 UK Sat, pre-quali
+    # name -> {pin, submitted_at, updated_at, sessions:{quali:[10], race1:[10], race2:[10]}}
+    "predictions": {},
+    # per-session finishing order (list of driver names) once entered, else None
+    "results": {"quali": None, "race1": None, "race2": None},
 }
 
 def load_store():
@@ -21,7 +26,7 @@ def load_store():
         with open(STORE) as f:
             return json.load(f)
     except Exception:
-        return dict(DEFAULT_STORE)
+        return json.loads(json.dumps(DEFAULT_STORE))
 
 def save_store(s):
     tmp = STORE + ".tmp"
@@ -36,8 +41,12 @@ def load_drivers():
 def now_iso():
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
 
+def any_results(s):
+    r = s.get("results") or {}
+    return any(r.get(k) for k in SESSIONS)
+
 def locked(s):
-    return bool(now_iso() >= s["lock_at"] or s.get("results"))
+    return bool(now_iso() >= s["lock_at"] or any_results(s))
 
 def score(pred, results):
     """Lower = better. Sum over 10 picks of |predicted_pos - actual_pos|.
@@ -51,6 +60,24 @@ def score(pred, results):
         if p == a:
             exact += 1
     return total, exact
+
+def build_leaderboard(s):
+    lb = []
+    for name, p in s["predictions"].items():
+        scores, total, exact = {}, 0, 0
+        for k in SESSIONS:
+            res = (s.get("results") or {}).get(k)
+            pred = (p.get("sessions") or {}).get(k)
+            if res and pred:
+                t, e = score(pred, res)
+                scores[k] = t
+                total += t
+                exact += e
+            else:
+                scores[k] = None
+        lb.append({"name": name, "scores": scores, "total": total, "exact": exact})
+    lb.sort(key=lambda r: (r["total"], -r["exact"], r["name"].lower()))
+    return lb
 
 class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
@@ -79,7 +106,7 @@ class H(BaseHTTPRequestHandler):
             preds = {}
             for name, p in s["predictions"].items():
                 if is_locked:
-                    preds[name] = {"top10": p["top10"], "updated_at": p["updated_at"]}
+                    preds[name] = {"sessions": p["sessions"], "updated_at": p["updated_at"]}
                 else:
                     preds[name] = {"updated_at": p["updated_at"]}  # hide picks until lock
             out = {
@@ -87,13 +114,8 @@ class H(BaseHTTPRequestHandler):
                 "drivers": drivers, "predictions": preds, "results": s.get("results"),
                 "server_time": now_iso(),
             }
-            if s.get("results"):
-                lb = []
-                for name, p in s["predictions"].items():
-                    t, e = score(p["top10"], s["results"])
-                    lb.append({"name": name, "score": t, "exact": e, "top10": p["top10"]})
-                lb.sort(key=lambda r: (r["score"], -r["exact"], r["name"].lower()))
-                out["leaderboard"] = lb
+            if any_results(s):
+                out["leaderboard"] = build_leaderboard(s)
             self._send(200, out)
         elif self.path == "/api/health":
             self._send(200, {"ok": True, "time": now_iso()})
@@ -110,15 +132,22 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/api/predict":
             name = str(data.get("name", "")).strip()[:40]
             pin = str(data.get("pin", "")).strip()[:20]
-            top10 = data.get("top10", [])
+            sessions = data.get("sessions")
             if not re.match(r"^[\w \-'.]{2,40}$", name):
                 return self._send(400, {"error": "Enter a valid name (2-40 chars)."})
             if not pin or len(pin) < 3:
                 return self._send(400, {"error": "PIN must be at least 3 characters."})
             valid = {d["name"] for d in load_drivers()}
-            if (not isinstance(top10, list) or len(top10) != 10
-                    or len(set(top10)) != 10 or any(t not in valid for t in top10)):
-                return self._send(400, {"error": "Pick exactly 10 distinct drivers."})
+            if not isinstance(sessions, dict):
+                return self._send(400, {"error": "Missing sessions."})
+            labels = {"quali": "Quali", "race1": "Race 1", "race2": "Race 2"}
+            clean = {}
+            for k in SESSIONS:
+                lst = sessions.get(k)
+                if (not isinstance(lst, list) or len(lst) != 10
+                        or len(set(lst)) != 10 or any(t not in valid for t in lst)):
+                    return self._send(400, {"error": f"{labels[k]}: pick exactly 10 distinct drivers."})
+                clean[k] = lst
             with LOCK:
                 s = load_store()
                 if locked(s):
@@ -128,9 +157,9 @@ class H(BaseHTTPRequestHandler):
                 if existing:
                     if s["predictions"][existing]["pin"] != pin:
                         return self._send(403, {"error": "Name taken — wrong PIN. Use your PIN to update your picks."})
-                    s["predictions"][existing].update(top10=top10, updated_at=now_iso())
+                    s["predictions"][existing].update(sessions=clean, updated_at=now_iso())
                 else:
-                    s["predictions"][name] = {"top10": top10, "pin": pin,
+                    s["predictions"][name] = {"sessions": clean, "pin": pin,
                                               "submitted_at": now_iso(), "updated_at": now_iso()}
                 save_store(s)
             return self._send(200, {"ok": True})
@@ -138,6 +167,9 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/api/admin/results":
             if data.get("key") != ADMIN_KEY:
                 return self._send(403, {"error": "bad key"})
+            sess = data.get("session")
+            if sess not in SESSIONS:
+                return self._send(400, {"error": "session must be quali|race1|race2"})
             order = data.get("order")
             valid = {d["name"] for d in load_drivers()}
             if order is not None and (not isinstance(order, list) or len(set(order)) != len(order)
@@ -145,7 +177,9 @@ class H(BaseHTTPRequestHandler):
                 return self._send(400, {"error": "invalid order"})
             with LOCK:
                 s = load_store()
-                s["results"] = order
+                if not isinstance(s.get("results"), dict):
+                    s["results"] = {k: None for k in SESSIONS}
+                s["results"][sess] = order
                 save_store(s)
             return self._send(200, {"ok": True})
 
@@ -163,7 +197,7 @@ class H(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     if not os.path.exists(STORE):
-        save_store(dict(DEFAULT_STORE))
+        save_store(json.loads(json.dumps(DEFAULT_STORE)))
     port = int(os.environ.get("PORT", 8790))
     print(f"listening on :{port}")
     ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()

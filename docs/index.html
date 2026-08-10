@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brands Hatch Indy — Academy Top-10 Predictor</title>
+<title>Knockhill — Academy Predictor</title>
 <style>
   :root{
     --bg:#0d1117; --card:#161b22; --card2:#1c2330; --line:#2d3646;
@@ -47,17 +47,35 @@
   .btn{width:100%;padding:12px;border:none;border-radius:8px;background:var(--green);color:#04140a;
     font-weight:700;font-size:1rem;cursor:pointer;margin-top:4px}
   .btn:disabled{background:#30363d;color:var(--dim);cursor:not-allowed}
+  .btn2{padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card2);
+    color:var(--accent);font-size:.82rem;font-weight:600;cursor:pointer;margin-bottom:10px}
+  .btn2:hover{border-color:var(--accent)}
+  .tabs{display:flex;gap:6px;margin-bottom:12px}
+  .tab{flex:1;padding:10px 4px;border:1px solid var(--line);border-radius:8px;background:var(--card2);
+    color:var(--dim);font-size:.85rem;font-weight:600;cursor:pointer;text-align:center;user-select:none}
+  .tab.active{color:var(--txt);border-color:var(--accent);background:#1a2740}
+  .tab .cnt{display:block;font-size:.7rem;font-weight:400;margin-top:2px;color:var(--dim)}
+  .tab.full .cnt{color:var(--green)}
+  .progress{color:var(--dim);font-size:.8rem;text-align:center;margin-bottom:10px;font-variant-numeric:tabular-nums}
+  .progress .done{color:var(--green);font-weight:600}
   .msg{margin-top:10px;font-size:.85rem;padding:8px 10px;border-radius:8px;display:none}
   .msg.err{display:block;background:#3d1418;color:var(--red)}
   .msg.ok{display:block;background:#12331c;color:var(--green)}
-  table{width:100%;border-collapse:collapse;font-size:.85rem}
-  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
-  th{color:var(--dim);font-size:.72rem;text-transform:uppercase;letter-spacing:1px}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line)}
+  th{color:var(--dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.5px}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   tr.winner td{color:var(--gold);font-weight:700}
+  .await{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.72rem;font-weight:600;
+    background:#33210f;color:var(--amber);border:1px solid #5c451f;margin:6px 4px 0 0}
   .entrant{border-bottom:1px solid var(--line);padding:8px 0;font-size:.88rem;display:flex;justify-content:space-between}
   .entrant .when{color:var(--dim);font-size:.75rem}
   details{margin-top:6px}
   summary{cursor:pointer;color:var(--accent);font-size:.82rem}
+  .seslists{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+  .seslists div{flex:1 1 150px;min-width:140px}
+  .seslists h4{margin:0 0 4px;font-size:.75rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px}
+  .seslists ol{font-size:.82rem;margin:0;padding-left:22px}
   .countdown{font-variant-numeric:tabular-nums;font-weight:600;color:var(--amber)}
   .offline{background:#3d1418;color:var(--red);padding:10px;border-radius:8px;margin-top:14px;
     font-size:.85rem;display:none;text-align:center}
@@ -68,19 +86,22 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>🏁 Brands Hatch Indy — Top-10 Predictor</h1>
-    <div class="sub" id="eventLine">Caterham Academy · Saturday 1 August 2026</div>
+    <h1>🏁 Knockhill — Academy Predictor</h1>
+    <div class="sub" id="eventLine">Caterham Academy · Sat 15 – Sun 16 Aug 2026</div>
     <div id="statusBadge"></div>
   </header>
 
   <div class="offline" id="offlineBox">⚠️ Can't reach the prediction server right now. Try again in a minute.</div>
 
   <div class="card" id="pickCard">
-    <h2>Your prediction</h2>
-    <div class="hint">Tap drivers to build your top 10 in finishing order. Tap ✕ to remove, ▲▼ to reorder. Scoring: sum of |predicted − actual| position across your 10 picks — lowest score wins. Exact hits break ties.</div>
+    <h2>Your predictions — Quali, Race 1 &amp; Race 2</h2>
+    <div class="hint">Predict the top 10 for all three sessions. Tap drivers to build each list in finishing order; ✕ removes, ▲▼ reorder. Scoring per session: sum of |predicted − actual| position — lowest total across the weekend wins. Exact hits break ties.</div>
+    <div class="tabs" id="tabs"></div>
+    <div class="progress" id="progress"></div>
+    <button class="btn2" id="copyBtn" style="display:none"></button>
     <div class="cols">
       <div class="col">
-        <h3>Your top 10 <span id="pickCount"></span></h3>
+        <h3 id="pickColTitle">Your top 10</h3>
         <ul id="picks"></ul>
       </div>
       <div class="col">
@@ -91,7 +112,7 @@
     <div style="margin-top:14px">
       <input type="text" id="name" placeholder="Your name (as other racers know you)" maxlength="40">
       <input type="password" id="pin" placeholder="PIN (3+ chars — lets you edit your picks later)" maxlength="20">
-      <button class="btn" id="submitBtn" disabled>Submit prediction</button>
+      <button class="btn" id="submitBtn" disabled>Submit predictions</button>
       <div class="msg" id="msg"></div>
     </div>
   </div>
@@ -103,10 +124,15 @@
   </div>
 
   <div class="card" id="resultsCard" style="display:none">
-    <h2>🏆 Final leaderboard</h2>
-    <div class="hint">Score = sum of positional errors across the 10 picks. Lower is better.</div>
-    <table id="lbTable"><thead><tr><th>#</th><th>Player</th><th>Score</th><th>Exact</th></tr></thead><tbody></tbody></table>
-    <details><summary>Show official result</summary><ol id="officialOrder" style="font-size:.85rem;margin-top:8px"></ol></details>
+    <h2>🏆 Leaderboard</h2>
+    <div class="hint">Score per session = sum of positional errors across the 10 picks. Total over scored sessions — lower is better.</div>
+    <div id="awaitBadges"></div>
+    <div style="overflow-x:auto;margin-top:8px">
+    <table id="lbTable"><thead><tr>
+      <th>#</th><th>Player</th><th class="num">Quali</th><th class="num">R1</th><th class="num">R2</th><th class="num">Total</th><th class="num">Exact</th>
+    </tr></thead><tbody></tbody></table>
+    </div>
+    <div id="officialWrap"></div>
   </div>
 
   <div class="card" id="entrantsCard">
@@ -120,7 +146,11 @@
 
 <script>
 const CONFIG_URL = 'api-config.json';
-let API = null, state = null, picks = [];
+const SESSIONS = ['quali','race1','race2'];
+const LABEL = {quali:'🎯 Quali', race1:'🏁 Race 1', race2:'🏁 Race 2'};
+const SHORT = {quali:'Quali', race1:'R1', race2:'R2'};
+let API = null, state = null, tab = 'quali';
+let picks = {quali:[], race1:[], race2:[]};
 
 async function getApi(){
   const r = await fetch(CONFIG_URL + '?t=' + Date.now());
@@ -145,13 +175,21 @@ function fmtCountdown(ms){
   return (d?d+'d ':'')+h+'h '+m+'m';
 }
 
+function resultsCount(){
+  if(!state.results) return 0;
+  return SESSIONS.filter(k=>state.results[k]).length;
+}
+
 function render(){
   const badge = document.getElementById('statusBadge');
   const lockAt = new Date(state.lock_at);
-  if(state.results){
-    badge.innerHTML = '<span class="badge done">Race finished — results in</span>';
+  const rc = resultsCount();
+  if(rc === 3){
+    badge.innerHTML = '<span class="badge done">Weekend finished — all results in</span>';
+  } else if(rc > 0){
+    badge.innerHTML = '<span class="badge done">Results coming in ('+rc+'/3 sessions scored)</span>';
   } else if(state.locked){
-    badge.innerHTML = '<span class="badge locked">🔒 Predictions locked — awaiting result</span>';
+    badge.innerHTML = '<span class="badge locked">🔒 Predictions locked — awaiting results</span>';
   } else {
     badge.innerHTML = '<span class="badge open">Open — locks in <span class="countdown">' +
       fmtCountdown(lockAt - new Date()) + '</span></span>';
@@ -159,48 +197,78 @@ function render(){
   document.getElementById('eventLine').textContent = state.event;
 
   document.getElementById('pickCard').style.display = state.locked ? 'none':'block';
-  document.getElementById('lockCard').style.display = (state.locked && !state.results)?'block':'none';
-  document.getElementById('resultsCard').style.display = state.results?'block':'none';
+  document.getElementById('lockCard').style.display = (state.locked && rc===0)?'block':'none';
+  document.getElementById('resultsCard').style.display = rc>0?'block':'none';
 
   if(!state.locked) renderPicker();
   renderEntrants();
-  if(state.locked && !state.results) renderLockedPicks();
-  if(state.results) renderLeaderboard();
+  if(state.locked && rc===0) renderLockedPicks();
+  if(rc>0) renderLeaderboard();
 }
 
 function renderPicker(){
+  // tabs
+  const tabsEl = document.getElementById('tabs');
+  tabsEl.innerHTML='';
+  SESSIONS.forEach(k=>{
+    const t=document.createElement('div');
+    t.className='tab'+(k===tab?' active':'')+(picks[k].length===10?' full':'');
+    t.innerHTML = LABEL[k]+'<span class="cnt">'+picks[k].length+'/10'+(picks[k].length===10?' ✓':'')+'</span>';
+    t.onclick=()=>{ tab=k; renderPicker(); };
+    tabsEl.appendChild(t);
+  });
+  document.getElementById('progress').innerHTML = SESSIONS.map(k=>{
+    const c=picks[k].length;
+    return '<span'+(c===10?' class="done"':'')+'>'+SHORT[k]+' '+c+'/10</span>';
+  }).join(' · ');
+
+  // copy-from button
+  const copyBtn=document.getElementById('copyBtn');
+  const src = tab==='race1' ? 'quali' : tab==='race2' ? 'race1' : null;
+  if(src && picks[src].length){
+    copyBtn.style.display='inline-block';
+    copyBtn.textContent = '📋 Copy from '+(src==='quali'?'Quali':'Race 1')+(picks[tab].length?' (replaces current list)':'');
+    copyBtn.onclick=()=>{ picks[tab]=picks[src].slice(); renderPicker(); };
+  } else copyBtn.style.display='none';
+
+  document.getElementById('pickColTitle').textContent = LABEL[tab].replace(/^\S+\s/,'')+' — your top 10';
+
   const pool = document.getElementById('pool');
   const picksEl = document.getElementById('picks');
-  const chosen = new Set(picks);
+  const cur = picks[tab];
+  const chosen = new Set(cur);
   pool.innerHTML='';
   state.drivers.forEach(d=>{
     if(chosen.has(d.name)) return;
     const li=document.createElement('li');
     li.className='drv';
     li.innerHTML = `<span class="num">#${d.num}</span><span>${d.name}</span><span class="pts">${d.points} pts</span>`;
-    li.onclick=()=>{ if(picks.length<10){ picks.push(d.name); renderPicker(); } };
+    li.onclick=()=>{ if(cur.length<10){ cur.push(d.name); renderPicker(); } };
     pool.appendChild(li);
   });
   picksEl.innerHTML='';
-  picks.forEach((n,i)=>{
+  cur.forEach((n,i)=>{
     const li=document.createElement('li');
     li.className='pick';
     li.innerHTML = `<span class="pos">${i+1}</span><span class="name">${n}</span>` +
       `<button title="up">▲</button><button title="down">▼</button><button title="remove">✕</button>`;
     const [up,down,rm]=li.querySelectorAll('button');
-    up.onclick=()=>{ if(i>0){[picks[i-1],picks[i]]=[picks[i],picks[i-1]];renderPicker();} };
-    down.onclick=()=>{ if(i<picks.length-1){[picks[i+1],picks[i]]=[picks[i],picks[i+1]];renderPicker();} };
-    rm.onclick=()=>{ picks.splice(i,1); renderPicker(); };
+    up.onclick=()=>{ if(i>0){[cur[i-1],cur[i]]=[cur[i],cur[i-1]];renderPicker();} };
+    down.onclick=()=>{ if(i<cur.length-1){[cur[i+1],cur[i]]=[cur[i],cur[i+1]];renderPicker();} };
+    rm.onclick=()=>{ cur.splice(i,1); renderPicker(); };
     picksEl.appendChild(li);
   });
-  for(let i=picks.length;i<10;i++){
+  for(let i=cur.length;i<10;i++){
     const li=document.createElement('li');
     li.className='slot-empty';
     li.innerHTML=`<span class="pos">${i+1}</span><span>— tap a driver →</span>`;
     picksEl.appendChild(li);
   }
-  document.getElementById('pickCount').textContent = `(${picks.length}/10)`;
-  document.getElementById('submitBtn').disabled = picks.length!==10;
+  const complete = SESSIONS.every(k=>picks[k].length===10);
+  const btn=document.getElementById('submitBtn');
+  btn.disabled = !complete;
+  btn.textContent = complete ? 'Submit predictions (all 3 sessions)' :
+    'Complete all 3 lists to submit ('+SESSIONS.map(k=>SHORT[k]+' '+picks[k].length+'/10').join(' · ')+')';
 }
 
 function renderEntrants(){
@@ -216,28 +284,46 @@ function renderEntrants(){
   });
 }
 
+function sessionListsHtml(sessions){
+  return '<div class="seslists">'+SESSIONS.map(k=>
+    '<div><h4>'+LABEL[k]+'</h4><ol>'+
+    ((sessions&&sessions[k])||[]).map(x=>`<li>${x}</li>`).join('')+
+    '</ol></div>').join('')+'</div>';
+}
+
 function renderLockedPicks(){
   document.getElementById('lockHint').textContent =
-    'All picks are now visible. Result gets entered after the race.';
+    'All picks are now visible. Results get entered after each session.';
   const el=document.getElementById('lockedList'); el.innerHTML='';
   Object.entries(state.predictions).forEach(([n,p])=>{
     const det=document.createElement('details');
-    det.innerHTML=`<summary>🏎️ ${n}</summary><ol style="font-size:.85rem">`+
-      p.top10.map(x=>`<li>${x}</li>`).join('')+`</ol>`;
+    det.innerHTML=`<summary>🏎️ ${n}</summary>`+sessionListsHtml(p.sessions);
     el.appendChild(det);
   });
 }
 
 function renderLeaderboard(){
+  const pending = SESSIONS.filter(k=>!state.results[k]);
+  document.getElementById('awaitBadges').innerHTML =
+    pending.map(k=>'<span class="await">⏳ awaiting '+({quali:'Quali',race1:'Race 1',race2:'Race 2'})[k]+'</span>').join('');
   const tb=document.querySelector('#lbTable tbody'); tb.innerHTML='';
+  const fmt=v=>v===null||v===undefined?'—':v;
   (state.leaderboard||[]).forEach((r,i)=>{
     const tr=document.createElement('tr');
     if(i===0) tr.className='winner';
-    tr.innerHTML=`<td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td>${r.name}</td><td>${r.score}</td><td>${r.exact}</td>`;
+    tr.innerHTML=`<td>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td>${r.name}</td>`+
+      `<td class="num">${fmt(r.scores.quali)}</td><td class="num">${fmt(r.scores.race1)}</td>`+
+      `<td class="num">${fmt(r.scores.race2)}</td><td class="num"><b>${r.total}</b></td><td class="num">${r.exact}</td>`;
     tb.appendChild(tr);
   });
-  document.getElementById('officialOrder').innerHTML =
-    state.results.map(n=>`<li>${n}</li>`).join('');
+  const ow=document.getElementById('officialWrap'); ow.innerHTML='';
+  SESSIONS.forEach(k=>{
+    if(!state.results[k]) return;
+    const det=document.createElement('details');
+    det.innerHTML='<summary>Official result — '+({quali:'Quali',race1:'Race 1',race2:'Race 2'})[k]+'</summary><ol style="font-size:.85rem;margin-top:8px">'+
+      state.results[k].map(n=>`<li>${n}</li>`).join('')+'</ol>';
+    ow.appendChild(det);
+  });
 }
 
 document.getElementById('submitBtn').onclick = async ()=>{
@@ -248,9 +334,9 @@ document.getElementById('submitBtn').onclick = async ()=>{
   try{
     const r=await fetch(API+'/api/predict',{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name,pin,top10:picks})});
+      body:JSON.stringify({name,pin,sessions:picks})});
     const j=await r.json();
-    if(j.ok){ msg.className='msg ok'; msg.textContent='✅ Prediction saved! Come back with the same name + PIN to change it before lock.'; loadState(); }
+    if(j.ok){ msg.className='msg ok'; msg.textContent='✅ Predictions saved — all 3 sessions! Come back with the same name + PIN to change them before lock.'; loadState(); }
     else { msg.className='msg err'; msg.textContent=j.error||'Something went wrong.'; }
   }catch(e){ msg.className='msg err'; msg.textContent='Network error — server unreachable.'; }
 };

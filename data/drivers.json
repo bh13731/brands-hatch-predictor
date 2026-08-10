@@ -1,6 +1,7 @@
 {
-  "updated": "2026-07-28",
+  "updated": "2026-08-10",
   "source": "https://caterhamcars.com/en/motorsport/leaderboards",
+  "note": "Site standings re-scraped 2026-08-10 but still exclude the Brands Hatch round (1 Aug); points shown are pre-Brands Hatch. Points are a display hint only.",
   "drivers": [
     {"pos": 1, "name": "William Mulholland", "num": 67, "points": 52},
     {"pos": 2, "name": "Barney Hussey-Yeo", "num": 2, "points": 45},
