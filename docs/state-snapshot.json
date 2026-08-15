@@ -389,13 +389,13 @@
   "quali": [
    "Tim George",
    "Peter Holland",
-   "William Mulholland",
    "Benjamin Prince-Stone",
    "Barney Hussey-Yeo",
    "Morton Stratten",
    "Phil McGovern",
    "Freddy Kelly",
    "Tom Stanton",
+   "William Mulholland",
    "Zach Parkhouse",
    "Freddie Caldwell",
    "Dan West",
@@ -446,52 +446,52 @@
   {
    "name": "Barney",
    "scores": {
-    "quali": 28,
+    "quali": 33,
     "race1": 53,
     "race2": null
    },
-   "total": 81,
+   "total": 86,
    "exact": 1
   },
   {
    "name": "Ben",
    "scores": {
-    "quali": 40,
+    "quali": 44,
     "race1": 55,
     "race2": null
    },
-   "total": 95,
+   "total": 99,
    "exact": 3
   },
   {
    "name": "DONATAS",
    "scores": {
-    "quali": 29,
+    "quali": 34,
     "race1": 71,
     "race2": null
    },
-   "total": 100,
+   "total": 105,
    "exact": 1
   },
   {
    "name": "Slow Freddie",
    "scores": {
-    "quali": 51,
+    "quali": 55,
     "race1": 55,
     "race2": null
    },
-   "total": 106,
-   "exact": 0
+   "total": 110,
+   "exact": 1
   },
   {
    "name": "morton",
    "scores": {
-    "quali": 48,
+    "quali": 53,
     "race1": 68,
     "race2": null
    },
-   "total": 116,
-   "exact": 3
+   "total": 121,
+   "exact": 1
   }
  ]
 }
