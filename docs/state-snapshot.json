@@ -440,58 +440,83 @@
    "Nicholas Tuckett",
    "Steven Hollyhead"
   ],
-  "race2": null
+  "race2": [
+   "Peter Holland",
+   "Tim George",
+   "Phil McGovern",
+   "Benjamin Prince-Stone",
+   "Tom Stanton",
+   "Dan West",
+   "Freddy Kelly",
+   "Olan Murphy",
+   "William Mulholland",
+   "Alistair Murray",
+   "Morton Stratten",
+   "Freddie Caldwell",
+   "Owen McIntyre",
+   "Jonathan Macklin",
+   "Craig Latimer",
+   "Antony Dann",
+   "John Wells",
+   "Michael Bedford",
+   "Adam Mann",
+   "Donatas Juskauskas",
+   "Sean McCammon",
+   "Stuart Gardner",
+   "Nicholas Tuckett",
+   "Steve Hollyhead"
+  ]
  },
  "leaderboard": [
-  {
-   "name": "Barney",
-   "scores": {
-    "quali": 33,
-    "race1": 53,
-    "race2": null
-   },
-   "total": 86,
-   "exact": 1
-  },
-  {
-   "name": "Ben",
-   "scores": {
-    "quali": 44,
-    "race1": 55,
-    "race2": null
-   },
-   "total": 99,
-   "exact": 3
-  },
   {
    "name": "DONATAS",
    "scores": {
     "quali": 34,
     "race1": 71,
-    "race2": null
+    "race2": 50
    },
-   "total": 105,
-   "exact": 1
+   "total": 155,
+   "exact": 2
+  },
+  {
+   "name": "Barney",
+   "scores": {
+    "quali": 33,
+    "race1": 53,
+    "race2": 76
+   },
+   "total": 162,
+   "exact": 2
   },
   {
    "name": "Slow Freddie",
    "scores": {
     "quali": 55,
     "race1": 55,
-    "race2": null
+    "race2": 55
    },
-   "total": 110,
-   "exact": 1
+   "total": 165,
+   "exact": 2
+  },
+  {
+   "name": "Ben",
+   "scores": {
+    "quali": 44,
+    "race1": 55,
+    "race2": 73
+   },
+   "total": 172,
+   "exact": 4
   },
   {
    "name": "morton",
    "scores": {
     "quali": 53,
     "race1": 68,
-    "race2": null
+    "race2": 63
    },
-   "total": 121,
-   "exact": 1
+   "total": 184,
+   "exact": 2
   }
  ]
 }
